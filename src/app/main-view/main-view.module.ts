@@ -7,6 +7,13 @@ import { jqxChartModule } from 'jqwidgets-ng/jqxchart';
 
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
+const routes = RouterModule.forChild([
+  {
+    path: '', component: SalesGridComponent,
+  }
+]);
 
 @NgModule({
   declarations: [
@@ -18,9 +25,7 @@ import { FormsModule } from '@angular/forms';
     NgSelectModule,
     FormsModule,
     jqxChartModule,
-  ],
-  exports: [
-    SalesGridComponent
-  ],
+    routes,
+  ]
 })
 export class MainViewModule { }

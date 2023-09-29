@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Sale, product } from '../../models/models';
 import { read, utils } from 'xlsx';
+import constants from 'src/app/constants/constants';
 
 @Component({
   selector: 'app-sales-grid',
@@ -8,59 +9,23 @@ import { read, utils } from 'xlsx';
   styleUrls: ['./sales-grid.component.sass'],
   encapsulation: ViewEncapsulation.None,
 })
-export class SalesGridComponent implements AfterViewInit, OnInit {
+export class SalesGridComponent implements OnInit {
   sales: Sale[] = [];
-
-  columns = [
-    { text: 'Codigo', datafield: 'codigo_venta', width: 60 },
-    { text: 'Tipo', datafield: 'tipo_venta', width: 80 },
-    { text: 'Ciudad', datafield: 'ciudad', width: 120 },
-    { text: 'Responsable', datafield: 'responsable_venta', width: 100 },
-    { text: 'Valor Compra', datafield: 'valor_compra', width: 100 },
-    { text: 'Precio Venta', datafield: 'precio_venta', width: 100 },
-    { text: 'fecha_venta', datafield: 'fecha_venta', width: 100 },
-    { text: 'producto', datafield: 'producto', width: 100 },
-    { text: 'origen_producto', datafield: 'origen_producto', width: 100 },
-    { text: 'lote_producto', datafield: 'lote_producto', width: 100 },
-    { text: 'orden_compra', datafield: 'orden_compra', width: 100 },
-  ];
   cities : string[] = [];
   productsData : string[] = [];
   productsCounter: product[] = [];
   selected: string = '';
   sourceGridData: any;
-  //{ text: '', datafield: '', width: 100 },
-  //source = new jqx.dataAdapter({ localData: this.sales });
+  chartTitle: string = 'Productos más vendidos (general)';
 
-  xAxis: any =
-    {
-      dataField: 'Producto',
-      gridLines: { visible: true },
-      valuesOnTicks: true
-    };
-
-  seriesGroups = [{
-    type: "column",
-    orientation: "vertical",
-    series: [{
-      dataField: "Valor",
-      displayText: "Cantidad de Ventas"
-    }],
-    valueAxis: {
-      minValue: 0,
-      maxValue: 15,
-      unitInterval: 1,
-      description: 'Cantidad'
-    },
-  }];
+  // Constants
+  columns = constants.columns;
+  xAxis = constants.xAxis;
+  seriesGroups = constants.seriesGroups;
+  
   constructor() {
-    console.log(this.sales.length, 'length of sales', this.productsCounter);
+    
   }
-
-  ngAfterViewInit(): void {
-
-  }
-
 
   ngOnInit(): void {
 
@@ -69,18 +34,22 @@ export class SalesGridComponent implements AfterViewInit, OnInit {
   getSelected() {
     if (this.selected == null) {
       this.sourceGridData = new jqx.dataAdapter({ localData: this.sales });
+      this.setProducts(this.sales);
+      this.chartTitle = 'Productos más vendidos (general)';
       return;
     };
     const filteredSales = this.sales.filter((sale) => sale.ciudad === this.selected);
     this.sourceGridData = new jqx.dataAdapter({ localData: filteredSales });
+    this.setProducts(filteredSales);
+    this.chartTitle = 'Productos más vendidos (' + this.selected + ')';
   }
 
   setCities() {
     this.cities = [...new Set(this.sales.map(sale => sale.ciudad))];
   };
 
-  setProducts() {
-    this.productsData = this.sales.map(sale => sale.producto);
+  setProducts(sales : Sale[]) {
+    this.productsData = sales.map(sale => sale.producto);
     let counter = this.productsData.reduce((count: any, currentValue: string) => {
       return (count[currentValue] ? ++count[currentValue] : (count[currentValue] = 1), count);
     }, {});
@@ -89,11 +58,14 @@ export class SalesGridComponent implements AfterViewInit, OnInit {
   }
 
   getMostSoldProducts(products : object) {
-    const maxN = 5;
+    let maxN = 5;
 
     let sortedProducts = Object.entries(products).sort((a, b) => {
       return b[1] - a[1];
     });
+    if (maxN > sortedProducts.length) {
+      maxN = sortedProducts.length;
+    }
     let last = sortedProducts[maxN - 1][1];
     let entries = sortedProducts.filter((entry) => { return entry[1] >= last; });
     let mostSoldProducts = Object.fromEntries(entries);
@@ -101,7 +73,6 @@ export class SalesGridComponent implements AfterViewInit, OnInit {
   };
 
   readExcel($event: any) {
-    console.log('excel');
     const files = $event.target.files;
     if (files.length) {
       const file = files[0];
@@ -115,7 +86,7 @@ export class SalesGridComponent implements AfterViewInit, OnInit {
           this.sales = rows;
           this.sourceGridData = new jqx.dataAdapter({ localData: this.sales });
           this.setCities();
-          this.setProducts();
+          this.setProducts(this.sales);
         }
       }
       reader.readAsArrayBuffer(file);
