@@ -1,0 +1,69 @@
+<!--
+<tr *ngFor="let sale of sales;">
+    <td>{{sale.codigo_venta}}</td>
+    <td>{{sale.fecha_venta}}</td>
+    <td>{{sale.ciudad}}</td>
+    <td>
+        {{sale.tipo_venta}}
+    </td>
+    <td>
+        {{sale.producto}}
+    </td>
+    <td>
+        {{sale.origen_producto}}
+    </td>
+    <td>
+        {{sale.lote_producto}}
+    </td>
+    <td>
+        {{sale.orden_compra}}
+    </td>
+    <td>
+        {{sale.responsable_venta}}
+    </td>
+    <td>
+        {{sale.valor_compra}}
+    </td>
+    <td>
+        {{sale.precio_venta}}
+    </td>
+</tr>
+
+
+-->
+<div class="grid-container">
+    <input id="uploadBtn" type="file"
+           (change)="readExcel($event)"
+           class="upload input-common" required />
+
+
+    <ng-select class="select-field" placeholder="Search Cities"
+               [clearable]="true"
+               [(ngModel)]="selected"
+               (change)="getSelected()">
+        <ng-option *ngFor="let city of cities; let i = index" [value]="city">
+            {{city}}
+        </ng-option>
+    </ng-select>
+    <jqxGrid
+             ngClass="grid"
+             [selectionmode]="'checkbox'"
+             [source]="sourceGridData"
+             [autoheight]="true"
+             [pageable]="true"
+             [altrows]="true"
+             [filterable]="true"
+             [sortable]="true"
+             [columns]="columns"
+             width="820"
+             #grid>
+    </jqxGrid>
+    <jqxChart [width]="820" [height]="500"
+              [title]="'Productos mas vendidos'"
+              [colorScheme]="'scheme01'"
+              [source]="productsCounter"
+              [xAxis]="xAxis"
+              [seriesGroups]="seriesGroups"
+              #chartReference>
+    </jqxChart>
+</div>
